@@ -1,0 +1,25 @@
+services:
+  mysqldb:
+    image: mysql
+    container_name: mysqldb
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: test
+
+  collections-ms:
+    build: ./collection-microservice
+    container_name: collections-ms
+    ports:
+      - "8085:8080"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysqldb:3306/test?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      mysqldb:
+        condition: service_healthy
